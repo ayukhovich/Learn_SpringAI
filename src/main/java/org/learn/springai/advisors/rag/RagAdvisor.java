@@ -48,10 +48,9 @@ public class RagAdvisor implements BaseAdvisor {
                 .toString();
 
         List<Document> documents = vectorStore.similaritySearch(
-                SearchRequest.builder()
+                SearchRequest.from(searchRequest)
                         .query(queryToRag)
-                        .topK(20)
-                        .similarityThreshold(0.5)
+                        .topK(searchRequest.getTopK()*2)
                         .build());
 
         if (documents == null || documents.isEmpty()) {
@@ -60,8 +59,8 @@ public class RagAdvisor implements BaseAdvisor {
                     .build();
         }
 
-        //BM25RerankEngine rerankEngine = BM25RerankEngine.builder().build();
-        //documents = rerankEngine.rerank(documents,queryToRag,searchRequest.getTopK());
+        BM25RerankEngine rerankEngine = BM25RerankEngine.builder().build();
+        documents = rerankEngine.rerank(documents,queryToRag,searchRequest.getTopK());
 
         String llmContext = documents.stream().map(Document::getText).collect(Collectors.joining(System.lineSeparator()));
 
