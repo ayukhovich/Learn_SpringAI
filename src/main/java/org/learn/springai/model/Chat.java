@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.ai.chat.messages.Message;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -35,6 +36,8 @@ public class Chat {
     public void addChatEntry(ChatEntry entry) {
         history.add(entry);
     }
+
+
 
 
 }

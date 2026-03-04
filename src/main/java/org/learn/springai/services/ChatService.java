@@ -6,6 +6,8 @@ import org.learn.springai.model.ChatEntry;
 import org.learn.springai.model.Role;
 import org.learn.springai.repo.ChatRepository;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -18,6 +20,7 @@ import java.util.List;
 import static org.learn.springai.model.Role.ASSISTANT;
 import static org.learn.springai.model.Role.USER;
 
+
 @Service
 public class ChatService {
     @Autowired
@@ -28,9 +31,6 @@ public class ChatService {
 
     @Autowired
     private ChatService myProxy;
-
-
-
 
     public List<Chat> getAllChats() {
         return chatRepo.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
@@ -65,22 +65,21 @@ public class ChatService {
     }
 
     public SseEmitter proceedInteractionWithStreaming(Long chatId, String userPrompt) {
-        myProxy.addChatEntry(chatId, userPrompt, USER);
 
         SseEmitter sseEmitter = new SseEmitter(0L);
         final StringBuilder answer = new StringBuilder();
 
         chatClient
                 .prompt(userPrompt)
+                .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, chatId))
                 .stream()
                 .chatResponse()
                 .subscribe(
                         (ChatResponse response) -> processToken(response, sseEmitter, answer),
                         sseEmitter::completeWithError,
-                        () -> myProxy.addChatEntry(chatId, answer.toString(), ASSISTANT));
+                        sseEmitter::complete);
         return sseEmitter;
     }
-
 
 
 

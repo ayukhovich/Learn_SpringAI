@@ -47,9 +47,9 @@
         <div class="messages" id="messages">
             <th:block th:if="${chat != null}">
                 <div th:if="${!#lists.isEmpty(chat.history)}" th:each="entry : ${chat.history}"
-                     th:class="${entry.role.name == 'user'} ? 'message user' : 'message mentor'"><img
-                        th:src="${entry.role.name == 'user'} ? '/images/user.png' : '/images/mentor.png'" alt="avatar">
-                    <div class="bubble" th:text="${entry.content}"></div>
+                     th:class="${entry.role.name == 'USER'} ? 'message user' : 'message mentor'"><img
+                        th:src="${entry.role.name == 'USER'} ? '/images/user.png' : '/images/mentor.png'" alt="avatar">
+                    <div class="bubble" th:text="${entry.role.name}"></div>
                 </div>
             </th:block>
         </div>
@@ -57,8 +57,8 @@
         <div th:if="${chat != null}">
             <form th:action="@{/chat/{chatId}/entry(chatId=${chat.id})}" method="post" class="input-area">
                 <div class="input-bubble">
-                    <label for="chat-input" class="sr-only">Спрашивай</label>
-                    <textarea id="chat-input" name="prompt" placeholder="Спрашивай..." required></textarea>
+                    <label for="chat-input" class="sr-only">Вопрос</label>
+                    <textarea id="chat-input" name="prompt" placeholder="Вопрос..." required></textarea>
                     <button type="button" id="send-button">SEND</button>
                 </div>
             </form>

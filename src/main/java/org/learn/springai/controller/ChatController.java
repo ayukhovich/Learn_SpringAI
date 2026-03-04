@@ -24,7 +24,6 @@ public class ChatController {
         model.addAttribute("chats", chatService.getAllChats());
         model.addAttribute("chat", chatService.getChat(chatId));
         return "chat";
-
     }
 
     @PostMapping("/chat/new")
@@ -44,13 +43,4 @@ public class ChatController {
         chatService.proceedInteraction(chatId, prompt);
         return "redirect:/chat/" + chatId;
     }
-
-
-
-
-
-
-
-
-
 }
