@@ -9,6 +9,7 @@ import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.prompt.PromptTemplate;
+import org.springframework.ai.ollama.api.OllamaOptions;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,6 @@ import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 public class DemoWebinar1NoReactApplication {
-
 
     private static final PromptTemplate MY_PROMPT_TEMPLATE = new PromptTemplate(
             "{query}\n\n" +
@@ -39,29 +39,48 @@ public class DemoWebinar1NoReactApplication {
     @Bean
     public ChatClient chatClient(ChatClient.Builder builder) {
         return builder.defaultAdvisors(
-                getHistoryAdvisor(),
-                SimpleLoggerAdvisor.builder().build()
-                //, getRagAdviser()
-                ).build();
+                    getHistoryAdvisor(),
+                    SimpleLoggerAdvisor.builder().build(),
+                    getRagAdviser(),
+                    SimpleLoggerAdvisor.builder().build()
+                )
+                .defaultOptions(getOllamaOptions())
+                .build();
+    }
+
+    private Advisor getHistoryAdvisor() {
+        return MessageChatMemoryAdvisor.builder(getChatMemory()).order(-10).build();
     }
 
     private Advisor getRagAdviser() {
         return QuestionAnswerAdvisor.builder(vectorStore)
                 .promptTemplate(MY_PROMPT_TEMPLATE)
                 .searchRequest(
-                    SearchRequest.builder().topK(4).build()
+                    SearchRequest.builder()
+                            .topK(4)
+                            .similarityThreshold(0.60)
+                            .build()
                 )
                 .build();
     }
 
-    private Advisor getHistoryAdvisor() {
-       return MessageChatMemoryAdvisor.builder(getChatMemory()).order(-10).build();
-    }
-
     private ChatMemory getChatMemory() {
-       return PostgresChatMemory.builder()
+        return PostgresChatMemory.builder()
                 .maxMessages(8)
                 .chatMemoryRepository(chatRepository)
+                .build();
+    }
+
+    private OllamaOptions getOllamaOptions() {
+        return OllamaOptions.builder()
+                // temperature: 0.0 - deterministic, 1.0 - creative (default 0.8)
+                .temperature(0.3)
+                // topP: nucleus sampling - cumulative probability of tokens (default 0.9)
+                .topP(0.7)
+                // topK: number of most probable tokens to consider (default 40)
+                .topK(20)
+                // repeatPenalty: penalizes repeated tokens (1.0 = no penalty, >1.0 = penalty)
+                .repeatPenalty(1.1)
                 .build();
     }
 
