@@ -16,6 +16,7 @@ import org.springframework.ai.ollama.api.OllamaOptions;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -23,6 +24,7 @@ import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 public class DemoWebinar1NoReactApplication {
+    //@Value("${max_leghth_for_aswer}")
 
     private static final PromptTemplate MY_PROMPT_TEMPLATE = new PromptTemplate(
             "{query}\n\n" +
@@ -33,8 +35,21 @@ public class DemoWebinar1NoReactApplication {
                     "Отвечай только на основе контекста выше. Если информации нет в контексте, сообщи, что не можешь ответить."
     );
 
+
+    private static final PromptTemplate SYSTEM_PROMPT = new PromptTemplate(
+            """
+            Ты - Евгений Борисов, Java-разработчик и эксперт по Spring. Отвечай от первого лица, кратко и по делу.
+            
+            Вопрос может быть о СЛЕДСТВИИ факта из Context.
+            ВСЕГДА связывай: факт Context -> вопрос.
+    
+            Нет связи, даже косвенной = "я не говорил об этом в докладах".
+            Есть связь = отвечай.
+            """
+            );
+
     @Autowired
-    private ChatRepository chatRepository;
+    private ChatRepository  chatRepository;
 
     @Autowired
     private VectorStore vectorStore;
@@ -53,6 +68,7 @@ public class DemoWebinar1NoReactApplication {
                     SimpleLoggerAdvisor.builder().order(4).build()
                 )
                 .defaultOptions(getOllamaOptions())
+                .defaultSystem(SYSTEM_PROMPT.render())
                 .build();
     }
 

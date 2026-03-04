@@ -23,34 +23,34 @@ public class ExpansionQueryAdvisor implements BaseAdvisor {
                 Reformulated: 
                 """) .build();
 
-//    private static final PromptTemplate template = PromptTemplate.builder()
-//            .template("""
-//                Instruction: Расширь поисковый запрос, добавив наиболее релевантные термины.
-//
-//                СПЕЦИАЛИЗАЦИЯ ПО SPRING FRAMEWORK:
-//                - Жизненный цикл Spring бинов: конструктор → BeanPostProcessor → PostConstruct → прокси → ContextListener
-//                - Технологии: Dynamic Proxy, CGLib, reflection, аннотации, XML конфигурация
-//                - Компоненты: BeanFactory, ApplicationContext, BeanDefinition, MBean, JMX
-//                - Паттерны: dependency injection, AOP, профилирование, перехват методов
-//
-//                ПРАВИЛА:
-//                1. Сохрани ВСЕ слова из исходного вопроса
-//                2. Добавь МАКСИМУМ ПЯТЬ наиболее важных термина
-//                3. Выбирай самые специфичные и релевантные слова
-//                4. Результат - простой список слов через пробел
-//
-//                СТРАТЕГИЯ ВЫБОРА:
-//                - Приоритет: специализированные термины
-//                - Избегай общих слов
-//                - Фокусируйся на ключевых понятиях
-//
-//                ПРИМЕРЫ:
-//                "что такое спринг" → "что такое спринг фреймворк Java"
-//                "как создать файл" → "как создать файл документ программа"
-//
-//                Question: {question}
-//                Expanded query:
-//                """).build();
+    private static final PromptTemplate main_template = PromptTemplate.builder()
+            .template("""
+                Instruction: Расширь поисковый запрос, добавив наиболее релевантные термины.
+
+                СПЕЦИАЛИЗАЦИЯ ПО SPRING FRAMEWORK:
+                - Жизненный цикл Spring бинов: конструктор → BeanPostProcessor → PostConstruct → прокси → ContextListener
+                - Технологии: Dynamic Proxy, CGLib, reflection, аннотации, XML конфигурация
+                - Компоненты: BeanFactory, ApplicationContext, BeanDefinition, MBean, JMX
+                - Паттерны: dependency injection, AOP, профилирование, перехват методов
+
+                ПРАВИЛА:
+                1. Сохрани ВСЕ слова из исходного вопроса
+                2. Добавь МАКСИМУМ ПЯТЬ наиболее важных термина
+                3. Выбирай самые специфичные и релевантные слова
+                4. Результат - простой список слов через пробел
+
+                СТРАТЕГИЯ ВЫБОРА:
+                - Приоритет: специализированные термины
+                - Избегай общих слов
+                - Фокусируйся на ключевых понятиях
+
+                ПРИМЕРЫ:
+                "что такое спринг" → "что такое спринг фреймворк Java"
+                "как создать файл" → "как создать файл документ программа"
+
+                Question: {question}
+                Expanded query:
+                """).build();
 
 
     public static final String ENRICHED_QUESTION = "ENRICHED_QUESTION";
@@ -85,7 +85,7 @@ public class ExpansionQueryAdvisor implements BaseAdvisor {
         String userQuestion = chatClientRequest.prompt().getUserMessage().getText();
         String enrichedQuestion = chatClient
                 .prompt()
-                .user(template.render(Map.of("question", userQuestion)))
+                .user(main_template.render(Map.of("question", userQuestion)))
                 .call()
                 .content();
 
