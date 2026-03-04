@@ -50,7 +50,7 @@ public class RagAdvisor implements BaseAdvisor {
         List<Document> documents = vectorStore.similaritySearch(
                 SearchRequest.builder()
                         .query(queryToRag)
-                        .topK(4)
+                        .topK(20)
                         .similarityThreshold(0.5)
                         .build());
 
