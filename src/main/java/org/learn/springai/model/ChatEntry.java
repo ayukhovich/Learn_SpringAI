@@ -16,12 +16,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChatEntry {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String content;
+
+    @Column(name = "chat_id")
+    private Long chatId;
 
     @Enumerated(EnumType.STRING)
     private Role role;
@@ -29,14 +31,12 @@ public class ChatEntry {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-
     public static ChatEntry toChatEntry(Message message) {
         return ChatEntry.builder()
                 .role(Role.getRole(message.getMessageType().getValue()))
                 .content(message.getText())
                 .build();
     }
-
 
     public Message toMessage() {
         return role.getMessage(content);

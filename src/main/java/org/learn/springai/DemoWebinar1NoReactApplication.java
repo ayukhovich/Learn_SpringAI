@@ -4,6 +4,7 @@ import org.learn.springai.repo.ChatRepository;
 import org.learn.springai.services.PostgresChatMemory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -29,8 +30,6 @@ public class DemoWebinar1NoReactApplication {
                     "Отвечай только на основе контекста выше. Если информации нет в контексте, сообщи, что не можешь ответить."
     );
 
-
-
     @Autowired
     private ChatRepository chatRepository;
 
@@ -39,15 +38,21 @@ public class DemoWebinar1NoReactApplication {
 
     @Bean
     public ChatClient chatClient(ChatClient.Builder builder) {
-        return builder.defaultAdvisors(getHistoryAdvisor()/*, getRagAdviser()*/).build();
+        return builder.defaultAdvisors(
+                getHistoryAdvisor(),
+                SimpleLoggerAdvisor.builder().build()
+                //, getRagAdviser()
+                ).build();
     }
 
     private Advisor getRagAdviser() {
-        return QuestionAnswerAdvisor.builder(vectorStore).promptTemplate(MY_PROMPT_TEMPLATE).searchRequest(
-                SearchRequest.builder().topK(4).build()
-        ).build();
+        return QuestionAnswerAdvisor.builder(vectorStore)
+                .promptTemplate(MY_PROMPT_TEMPLATE)
+                .searchRequest(
+                    SearchRequest.builder().topK(4).build()
+                )
+                .build();
     }
-
 
     private Advisor getHistoryAdvisor() {
        return MessageChatMemoryAdvisor.builder(getChatMemory()).order(-10).build();
@@ -55,7 +60,7 @@ public class DemoWebinar1NoReactApplication {
 
     private ChatMemory getChatMemory() {
        return PostgresChatMemory.builder()
-                .maxMessages(12)
+                .maxMessages(8)
                 .chatMemoryRepository(chatRepository)
                 .build();
     }
