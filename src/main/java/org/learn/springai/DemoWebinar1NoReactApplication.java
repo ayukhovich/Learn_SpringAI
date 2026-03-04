@@ -39,20 +39,20 @@ public class DemoWebinar1NoReactApplication {
     @Bean
     public ChatClient chatClient(ChatClient.Builder builder) {
         return builder.defaultAdvisors(
-                    getHistoryAdvisor(),
-                    SimpleLoggerAdvisor.builder().build(),
-                    getRagAdviser(),
-                    SimpleLoggerAdvisor.builder().build()
+                    getHistoryAdvisor(1),
+                    SimpleLoggerAdvisor.builder().order(3).build(),
+                    getRagAdviser(3),
+                    SimpleLoggerAdvisor.builder().order(4).build()
                 )
                 .defaultOptions(getOllamaOptions())
                 .build();
     }
 
-    private Advisor getHistoryAdvisor() {
-        return MessageChatMemoryAdvisor.builder(getChatMemory()).order(-10).build();
+    private Advisor getHistoryAdvisor(int order) {
+        return MessageChatMemoryAdvisor.builder(getChatMemory()).order(order).build();
     }
 
-    private Advisor getRagAdviser() {
+    private Advisor getRagAdviser(int order) {
         return QuestionAnswerAdvisor.builder(vectorStore)
                 .promptTemplate(MY_PROMPT_TEMPLATE)
                 .searchRequest(
@@ -61,6 +61,7 @@ public class DemoWebinar1NoReactApplication {
                             .similarityThreshold(0.60)
                             .build()
                 )
+                .order(order)
                 .build();
     }
 
