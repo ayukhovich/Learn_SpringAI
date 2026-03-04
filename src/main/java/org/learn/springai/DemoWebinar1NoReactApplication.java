@@ -1,5 +1,7 @@
 package org.learn.springai;
 
+import org.learn.springai.advisors.expension.ExpansionQueryAdvisor;
+import org.learn.springai.advisors.rag.RagAdvisor;
 import org.learn.springai.repo.ChatRepository;
 import org.learn.springai.services.PostgresChatMemory;
 import org.springframework.ai.chat.client.ChatClient;
@@ -8,6 +10,7 @@ import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.ollama.api.OllamaOptions;
 import org.springframework.ai.vectorstore.SearchRequest;
@@ -36,12 +39,17 @@ public class DemoWebinar1NoReactApplication {
     @Autowired
     private VectorStore vectorStore;
 
+    @Autowired
+    private ChatModel chatModel;;
+
     @Bean
     public ChatClient chatClient(ChatClient.Builder builder) {
         return builder.defaultAdvisors(
-                    getHistoryAdvisor(1),
-                    SimpleLoggerAdvisor.builder().order(3).build(),
-                    getRagAdviser(3),
+                        ExpansionQueryAdvisor.builder(chatModel).order(0).build(),
+                        getHistoryAdvisor(1),
+                    SimpleLoggerAdvisor.builder().order(2).build(),
+                    RagAdvisor.build(vectorStore).order(3).build(),
+                    //getRagAdviser(3),
                     SimpleLoggerAdvisor.builder().order(4).build()
                 )
                 .defaultOptions(getOllamaOptions())

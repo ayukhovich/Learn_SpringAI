@@ -43,27 +43,31 @@ public class RagAdvisor implements BaseAdvisor {
     @Override
     public ChatClientRequest before(ChatClientRequest chatClientRequest, AdvisorChain advisorChain) {
         String originalUserQuestion = chatClientRequest.prompt().getUserMessage().getText();
-        String queryToRag = chatClientRequest.context().getOrDefault(ENRICHED_QUESTION, originalUserQuestion).toString();
+        String queryToRag = chatClientRequest.context()
+                .getOrDefault(ENRICHED_QUESTION, originalUserQuestion)
+                .toString();
 
-        List<Document> documents = vectorStore.similaritySearch(SearchRequest.from(searchRequest).query(queryToRag).topK(searchRequest.getTopK()*2).build());
+        List<Document> documents = vectorStore.similaritySearch(
+                SearchRequest.builder()
+                        .query(queryToRag)
+                        .topK(4)
+                        .similarityThreshold(0.5)
+                        .build());
 
         if (documents == null || documents.isEmpty()) {
-            return chatClientRequest.mutate().context("CONTEXT","ТУТ ПУСТО - ни один документ моя собачка не обнаружила").build();
+            return chatClientRequest.mutate()
+                    .context("CONTEXT","ТУТ ПУСТО - ни один документ моя собачка не обнаружила")
+                    .build();
         }
 
-        BM25RerankEngine rerankEngine = BM25RerankEngine.builder().build();
-
-        documents = rerankEngine.rerank(documents,queryToRag,searchRequest.getTopK());
-
-
-
+        //BM25RerankEngine rerankEngine = BM25RerankEngine.builder().build();
+        //documents = rerankEngine.rerank(documents,queryToRag,searchRequest.getTopK());
 
         String llmContext = documents.stream().map(Document::getText).collect(Collectors.joining(System.lineSeparator()));
 
         String finalUserPrompt = template.render(
                 Map.of("context", llmContext, "question", originalUserQuestion)
         );
-
 
         return chatClientRequest.mutate().prompt(chatClientRequest.prompt().augmentUserMessage(finalUserPrompt)).build();
     }
