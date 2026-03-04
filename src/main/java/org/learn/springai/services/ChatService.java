@@ -50,7 +50,6 @@ public class ChatService {
         chatRepo.deleteById(chatId);
     }
 
-
     @Transactional
     public void addChatEntry(Long chatId, String prompt, Role role) {
         Chat chat = chatRepo.findById(chatId).orElseThrow();
@@ -80,8 +79,6 @@ public class ChatService {
                         sseEmitter::complete);
         return sseEmitter;
     }
-
-
 
     @SneakyThrows
     private static void processToken(ChatResponse response, SseEmitter emitter, StringBuilder answer) {
